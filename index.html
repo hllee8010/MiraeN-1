@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에듀케레 분석지 — Shackleton</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a2744;
+    --gold: #c8a84b;
+    --light-navy: #243260;
+    --bg: #f5f4f0;
+    --white: #ffffff;
+    --gray: #888;
+    --text: #1a1a1a;
+    --green: #2e7d32;
+    --red: #c62828;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    color: var(--text);
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 210px;
+    min-width: 210px;
+    background: var(--navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow-y: auto;
+  }
+  #sidebar .logo {
+    padding: 20px 16px 14px;
+    border-bottom: 1px solid rgba(200,168,75,0.3);
+  }
+  #sidebar .logo .title {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  #sidebar .logo .sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+  }
+  #sidebar .passage-list { padding: 10px 0; }
+  #sidebar .passage-btn {
+    display: block;
+    width: 100%;
+    padding: 11px 16px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.75);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.18s;
+    border-left: 3px solid transparent;
+    line-height: 1.5;
+  }
+  #sidebar .passage-btn:hover { background: rgba(200,168,75,0.1); color: #fff; }
+  #sidebar .passage-btn.active {
+    background: rgba(200,168,75,0.15);
+    color: var(--gold);
+    border-left-color: var(--gold);
+    font-weight: 700;
+  }
+  #sidebar .passage-btn .num { font-size: 10px; color: var(--gold); display: block; margin-bottom: 2px; }
+
+  /* MAIN */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  #header {
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 2px solid var(--gold);
+  }
+  #header .passage-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--gold);
+    font-weight: 600;
+  }
+  #header .passage-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    margin-left: auto;
+  }
+
+  /* TABS */
+  #tabs {
+    background: var(--white);
+    border-bottom: 2px solid var(--navy);
+    display: flex;
+    overflow-x: auto;
+    padding: 0 16px;
+  }
+  .tab-btn {
+    padding: 11px 14px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--gray);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    margin-bottom: -2px;
+  }
+  .tab-btn:hover { color: var(--navy); }
+  .tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); font-weight: 700; }
+
+  /* CONTENT */
+  #content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  /* SECTION STYLES */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* 문장분석 */
+  .passage-box {
+    border: 2px solid var(--navy);
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    background: #fff;
+    font-family: 'EB Garamond', serif;
+    font-size: 17px;
+    line-height: 2;
+    color: #111;
+  }
+  .sentence-block {
+    background: #fff;
+    border: 1px solid #d0d5e0;
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .sentence-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--navy);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .sentence-en {
+    font-family: 'EB Garamond', serif;
+    font-size: 16px;
+    color: #111;
+    line-height: 1.8;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #e8e8e8;
+    padding-bottom: 6px;
+  }
+  .slash-reading {
+    font-family: 'EB Garamond', serif;
+    font-size: 14px;
+    color: #555;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .grammar-list { list-style: none; padding: 0; }
+  .grammar-list li {
+    font-size: 12.5px;
+    color: #333;
+    padding: 4px 0 4px 14px;
+    position: relative;
+    line-height: 1.6;
+  }
+  .grammar-list li::before {
+    content: '▸';
+    color: var(--gold);
+    position: absolute;
+    left: 0;
+  }
+  .grammar-tag {
+    display: inline-block;
+    background: var(--navy);
+    color: #fff;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 5px;
+    font-weight: 600;
+  }
+
+  /* 문법총정리 */
+  .grammar-summary-item {
+    background: #fff;
+    border-left: 4px solid var(--navy);
+    border-radius: 0 6px 6px 0;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .grammar-summary-item .g-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .grammar-summary-item .g-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .grammar-summary-item .g-evidence {
+    font-family: 'EB Garamond', serif;
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 6px;
+    background: #f8f8f5;
+    padding: 6px 10px;
+    border-radius: 4px;
+  }
+  .grammar-summary-item .g-point {
+    font-size: 12.5px;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  /* 전문해석 */
+  .translation-box {
+    background: #fff;
+    border: 1px solid #d0d5e0;
+    border-radius: 6px;
+    padding: 20px 22px;
+    font-size: 14.5px;
+    line-height: 2.1;
+    color: #222;
+  }
+
+  /* 주제·구조 */
+  .topic-card {
+    background: #fff;
+    border: 1px solid #d0d5e0;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+  }
+  .topic-card .tc-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .topic-card .tc-content {
+    font-size: 14px;
+    color: #111;
+    line-height: 1.8;
+  }
+  .structure-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .structure-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .structure-step .step-badge {
+    background: var(--navy);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    margin-top: 2px;
+  }
+  .structure-step .step-text {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  /* 변형문제 */
+  .quiz-block {
+    background: #fff;
+    border: 1px solid #d0d5e0;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .quiz-block .q-type {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--gold);
+    background: var(--navy);
+    padding: 2px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .quiz-block .q-text {
+    font-size: 14px;
+    color: #111;
+    line-height: 1.8;
+    margin-bottom: 12px;
+  }
+  .quiz-block .q-passage {
+    font-family: 'EB Garamond', serif;
+    font-size: 14px;
+    color: #444;
+    background: #f8f8f5;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    line-height: 1.8;
+  }
+  .choice-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 9px 14px;
+    margin-bottom: 6px;
+    background: #f5f5f5;
+    border: 1.5px solid #ddd;
+    border-radius: 5px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #222;
+  }
+  .choice-btn:hover:not(:disabled) { background: #eef0f7; border-color: var(--navy); }
+  .choice-btn.correct { background: #e8f5e9; border-color: var(--green); color: var(--green); font-weight: 700; }
+  .choice-btn.incorrect { background: #ffebee; border-color: var(--red); color: var(--red); }
+  .choice-btn:disabled { cursor: default; }
+  .quiz-result { margin-top: 8px; font-size: 12.5px; }
+  .quiz-result.ok { color: var(--green); }
+  .quiz-result.fail { color: var(--red); }
+  .quiz-explain { font-size: 12px; color: #555; margin-top: 6px; padding: 6px 10px; background: #f0f4f8; border-radius: 4px; }
+  .quiz-reset-btn {
+    margin-top: 6px;
+    background: none;
+    border: 1.5px solid var(--navy);
+    color: var(--navy);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .quiz-reset-btn:hover { background: var(--navy); color: #fff; }
+
+  /* 서술형 */
+  .seosul-block {
+    background: #fff;
+    border: 1px solid #d0d5e0;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+  }
+  .seosul-block .s-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .seosul-block .s-text {
+    font-size: 14px;
+    color: #111;
+    line-height: 1.8;
+    margin-bottom: 10px;
+  }
+  .seosul-block .s-cond {
+    font-size: 12px;
+    color: #666;
+    background: #f5f5f0;
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  .answer-lines { margin-top: 4px; }
+  .answer-line { border-bottom: 1px solid #bbb; height: 28px; margin-bottom: 4px; }
+
+  /* 정답지 */
+  .answer-key-section { margin-bottom: 24px; }
+  .answer-key-section .ak-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+  .variform-answer {
+    background: #fff;
+    border: 1px solid #d0d5e0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .variform-answer .va-num { font-weight: 700; color: var(--navy); min-width: 20px; }
+  .variform-answer .va-ans { font-weight: 700; color: var(--green); min-width: 30px; }
+  .variform-answer .va-exp { font-size: 12.5px; color: #555; }
+  .seosul-answer {
+    background: #fff;
+    border-left: 4px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+  }
+  .seosul-answer .sa-num { font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+  .seosul-answer .sa-ans { font-size: 13.5px; color: #111; line-height: 1.8; }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .section-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .section-header .sh-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--navy), transparent);
+  }
+
+  /* SCROLLBAR */
+  #content::-webkit-scrollbar { width: 6px; }
+  #content::-webkit-scrollbar-track { background: #eee; }
+  #content::-webkit-scrollbar-thumb { background: var(--navy); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div class="logo">
+    <div class="title">에듀케레</div>
+    <div class="sub">Shackleton's Leadership</div>
+  </div>
+  <div class="passage-list">
+    <button class="passage-btn active" onclick="selectPassage(0)">
+      <span class="num">지문 1</span>
+      출발 · 빙하 조난
+    </button>
+    <button class="passage-btn" onclick="selectPassage(1)">
+      <span class="num">지문 2</span>
+      침몰 · 빙하 생존
+    </button>
+    <button class="passage-btn" onclick="selectPassage(2)">
+      <span class="num">지문 3</span>
+      탈출 · 전원 생환
+    </button>
+  </div>
+</div>
+<div id="main">
+  <div id="header">
+    <div class="passage-title" id="header-title">지문 1 — 출발과 빙하 조난</div>
+    <div class="passage-sub">Shackleton's Antarctic Expedition · 에듀케레 분석지</div>
+  </div>
+  <div id="tabs">
+    <button class="tab-btn active" onclick="selectTab(0)">① 문장분석</button>
+    <button class="tab-btn" onclick="selectTab(1)">② 문법총정리</button>
+    <button class="tab-btn" onclick="selectTab(2)">③ 전문해석</button>
+    <button class="tab-btn" onclick="selectTab(3)">④ 주제·구조</button>
+    <button class="tab-btn" onclick="selectTab(4)">⑤ 변형문제</button>
+    <button class="tab-btn" onclick="selectTab(5)">⑥ 서술형</button>
+    <button class="tab-btn" onclick="selectTab(6)">⑦ 정답지</button>
+  </div>
+  <div id="content">
+<!-- ===================== PASSAGE 1 ===================== -->
+<div class="passage-section" id="passage-0">
+
+  <!-- TAB 1: 문장분석 -->
+  <div class="section active" id="p0-tab0">
+    <div class="section-header"><h2>문장분석</h2><div class="sh-line"></div></div>
+
+    <div class="passage-box">
+      <span class="sentence-num">1</span>On August 1, 1914, Ernest Shackleton departed London on the ship <em>Endurance</em> with 27 men and 69 dogs to cross the Antarctic continent.
+      <span class="sentence-num">2</span>Little did they know the journey ahead would be one of the most challenging adventures in history.
+      <br><br>
+      <span class="sentence-num">3</span>The crew members were full of excitement, but when their ship got stuck in thick pack ice on January 18, 1915, their joy quickly turned to fear.
+      <span class="sentence-num">4</span>"Oh, my! It's frozen like an almond in the middle of a chocolate bar!" cried one of the crew members.
+      <span class="sentence-num">5</span>Shackleton and his men had to abandon their ship and set up camp on the floating ice, where they would be forced to spend the winter.
+      <span class="sentence-num">6</span>Each man was given a sleeping bag and was assigned to one of five tents.
+      <span class="sentence-num">7</span>Shackleton yielded the better sleeping bags to other crew members and chose to stay with the group's more troublesome characters who could get involved in conflicts.
+      <span class="sentence-num">8</span>The camping mats were not waterproof, so they were constantly wet.
+      <span class="sentence-num">9</span>The men shivered in the severe cold and suffered from frostbite.
+      <span class="sentence-num">10</span>Worst of all, the floating ice on which they were camped began cracking beneath them.
+      <span class="sentence-num">11</span>Shackleton walked around inspecting the ice regularly for the crew members' safety.
+      <span class="sentence-num">12</span>Some nights, Shackleton and his men had to pick up their tents, moving their camp to a more secure area where the ice was less likely to break.
+    </div>
+
+    <!-- S1 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">1</span>On August 1, 1914, Ernest Shackleton departed London on the ship <em>Endurance</em> with 27 men and 69 dogs to cross the Antarctic continent.</div>
+      <div class="slash-reading">1914년 8월 1일, / 어니스트 섀클턴은 런던을 출발했다 / 엔듀런스호를 타고 / 27명의 대원과 69마리의 개와 함께 / 남극 대륙을 횡단하기 위해.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">to부정사 목적</span>'to cross the Antarctic continent'는 목적(~하기 위해)을 나타내는 부사적 용법. 시험에서 '~하기 위해' vs '~할 것으로 예상되는' 구별 주의.</li>
+        <li><span class="grammar-tag">전치사구 수식</span>'on the ship Endurance'에서 고유명사가 명사를 동격으로 수식. 'with 27 men and 69 dogs'는 동반의 with.</li>
+      </ul>
+    </div>
+
+    <!-- S2 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">2</span>Little did they know the journey ahead would be one of the most challenging adventures in history.</div>
+      <div class="slash-reading">그들은 거의 알지 못했다 / 앞에 놓인 여정이 / 역사상 가장 도전적인 모험 중 하나가 될 것임을.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">부정어 도치</span>부정의 의미를 가진 'Little'이 문두로 나오면서 주어·동사가 도치(did they know). Seldom, Never, Hardly 등도 동일. 수능 어법 빈출.</li>
+        <li><span class="grammar-tag">간접의문문</span>'Little did they know [that] the journey would be...'에서 접속사 that 생략. know의 목적절.</li>
+        <li><span class="grammar-tag">최상급</span>'one of the most challenging adventures'는 'one of the + 최상급 + 복수명사' 구조. adventures가 복수임을 확인.</li>
+      </ul>
+    </div>
+
+    <!-- S3 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">3</span>The crew members were full of excitement, but when their ship got stuck in thick pack ice on January 18, 1915, their joy quickly turned to fear.</div>
+      <div class="slash-reading">선원들은 흥분으로 가득 차 있었다, / 하지만 그들의 배가 두꺼운 부빙에 갇히자 / 1915년 1월 18일에, / 그들의 기쁨은 빠르게 두려움으로 바뀌었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">be full of</span>'be full of + 명사' = ~으로 가득 차다. 감정 표현 관용구.</li>
+        <li><span class="grammar-tag">get stuck</span>'get + 과거분사'는 수동의 변화를 나타냄. 'get stuck' = 갇히다/꼼짝 못하게 되다. be stuck(상태)와 구별.</li>
+        <li><span class="grammar-tag">turn to</span>'turned to fear'에서 turn은 2형식 연결동사, to는 전치사(~으로).</li>
+      </ul>
+    </div>
+
+    <!-- S5 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">5</span>Shackleton and his men had to abandon their ship and set up camp on the floating ice, where they would be forced to spend the winter.</div>
+      <div class="slash-reading">섀클턴과 그의 대원들은 / 배를 버리고 / 유빙 위에 야영지를 세워야 했다, / 그곳에서 그들은 겨울을 보내도록 강요받을 것이었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">관계부사 where</span>'the floating ice, where they would be forced...'에서 where = on which. 선행사가 장소일 때 관계부사 사용.</li>
+        <li><span class="grammar-tag">be forced to</span>'be forced to + 동사원형' = ~하도록 강요받다. 수동태 + to부정사 구조.</li>
+        <li><span class="grammar-tag">병렬구조</span>'abandon their ship and set up camp' — and로 연결된 동사 병렬. had to에 걸리는 두 동사원형.</li>
+      </ul>
+    </div>
+
+    <!-- S6 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">6</span>Each man was given a sleeping bag and was assigned to one of five tents.</div>
+      <div class="slash-reading">각 남자는 침낭을 받았고 / 다섯 개의 텐트 중 하나에 배정되었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">수여동사 수동태</span>'was given a sleeping bag'은 give(수여동사)의 수동태. 직접목적어(sleeping bag)가 주어로 나옴. 'A sleeping bag was given to each man'도 가능.</li>
+        <li><span class="grammar-tag">병렬 수동태</span>'was given ... and was assigned' — 수동태 두 개가 and로 병렬 연결. 주어 Each man에 걸림.</li>
+      </ul>
+    </div>
+
+    <!-- S7 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">7</span>Shackleton yielded the better sleeping bags to other crew members and chose to stay with the group's more troublesome characters who could get involved in conflicts.</div>
+      <div class="slash-reading">섀클턴은 더 좋은 침낭을 / 다른 선원들에게 양보했고 / 집단 내 더 문제적인 인물들과 함께 있기로 선택했다 / 갈등에 휘말릴 수 있는.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">chose to</span>'chose to stay' — choose는 to부정사를 목적어로 취하는 동사. (choose-chose-chosen)</li>
+        <li><span class="grammar-tag">관계대명사 who</span>'characters who could get involved' — 선행사 characters(사람)를 수식하는 주격 관계대명사.</li>
+        <li><span class="grammar-tag">리더십 맥락</span>섀클턴이 좋은 침낭을 양보하고 문제적 인물 곁에 머문 것은 갈등 예방을 위한 희생적 리더십의 표현. 지문 전체 주제와 연결.</li>
+      </ul>
+    </div>
+
+    <!-- S10 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">10</span>Worst of all, the floating ice on which they were camped began cracking beneath them.</div>
+      <div class="slash-reading">무엇보다 최악은, / 그들이 야영하고 있던 유빙이 / 그들의 발 아래에서 갈라지기 시작했다는 것이었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">관계대명사 목적격</span>'the floating ice on which they were camped' = 'the floating ice which they were camped on'. 전치사 + 관계대명사 구조.</li>
+        <li><span class="grammar-tag">begin + 동명사</span>'began cracking' — begin은 to부정사·동명사 모두 목적어 가능. began to crack도 동일 의미.</li>
+      </ul>
+    </div>
+
+    <!-- S12 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">12</span>Some nights, Shackleton and his men had to pick up their tents, moving their camp to a more secure area where the ice was less likely to break.</div>
+      <div class="slash-reading">어떤 밤에는, / 섀클턴과 그의 대원들은 텐트를 걷어야 했다, / 야영지를 더 안전한 곳으로 옮기면서 / 얼음이 깨질 가능성이 낮은.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">분사구문</span>'moving their camp...' — 동시 동작을 나타내는 분사구문(= while they moved).</li>
+        <li><span class="grammar-tag">be likely to</span>'less likely to break' — 'be likely to + 동사원형' = ~할 가능성이 있다. less로 비교급 표현.</li>
+        <li><span class="grammar-tag">관계부사 where</span>'a more secure area where the ice was less likely to break' — 선행사 area를 수식.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TAB 2: 문법총정리 -->
+  <div class="section" id="p0-tab1">
+    <div class="section-header"><h2>문법총정리</h2><div class="sh-line"></div></div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">① 부정어 도치</div>
+      <div class="g-title">Little did they know ~</div>
+      <div class="g-evidence">"Little did they know the journey ahead would be one of the most challenging adventures in history."</div>
+      <div class="g-point">부정의 의미를 가진 부사(Little, Seldom, Never, Hardly 등)가 문두에 올 때 주어·조동사 도치가 일어난다. 수능 어법 문제에서 도치 여부(Did they little know → ✗)를 묻는 단골 유형.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">② 수여동사 수동태</div>
+      <div class="g-title">Each man was given a sleeping bag</div>
+      <div class="g-evidence">"Each man was given a sleeping bag and was assigned to one of five tents."</div>
+      <div class="g-point">give, assign 등 수여동사는 두 가지 수동태가 가능하다. 직접목적어(sleeping bag)가 주어로 올 때 간접목적어 앞에 to가 붙는다. 간접목적어(each man)가 주어로 오면 직접목적어는 그대로 남는다.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">③ 관계대명사 전치사+목적격</div>
+      <div class="g-title">the floating ice on which they were camped</div>
+      <div class="g-evidence">"Worst of all, the floating ice on which they were camped began cracking beneath them."</div>
+      <div class="g-point">'전치사 + 관계대명사' 구조는 'which they were camped on'을 격식체로 전환한 것. 전치사의 위치(앞 vs 뒤)와 관계부사(where)로의 바꿔쓰기 여부가 시험 포인트.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">④ 분사구문 (동시 동작)</div>
+      <div class="g-title">moving their camp to a more secure area</div>
+      <div class="g-evidence">"Shackleton and his men had to pick up their tents, moving their camp to a more secure area where the ice was less likely to break."</div>
+      <div class="g-point">분사구문은 주절의 주어와 동일한 주어 생략 후 동사를 현재분사로 전환. 동시 동작(= while moving)을 표현. 수능 어법에서 분사구문 vs 접속사절 변환이 출제됨.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">⑤ be likely to / be forced to</div>
+      <div class="g-title">less likely to break / would be forced to spend</div>
+      <div class="g-evidence">"where the ice was less likely to break" / "they would be forced to spend the winter"</div>
+      <div class="g-point">'be likely to + 동사원형'은 '~할 가능성이 있다', 'be forced to + 동사원형'은 '~하도록 강요받다'. 두 표현 모두 수동·to부정사 결합 구조로 수능 빈출 표현.</div>
+    </div>
+  </div>
+
+  <!-- TAB 3: 전문해석 -->
+  <div class="section" id="p0-tab2">
+    <div class="section-header"><h2>전문해석</h2><div class="sh-line"></div></div>
+    <div class="translation-box">
+      1914년 8월 1일, 어니스트 섀클턴은 엔듀런스호를 타고 27명의 대원과 69마리의 개를 이끌고 남극 대륙을 횡단하기 위해 런던을 출발했다. 그들은 앞에 놓인 여정이 역사상 가장 도전적인 모험 중 하나가 될 것임을 거의 알지 못했다.<br><br>
+      대원들은 흥분으로 가득 차 있었지만, 1915년 1월 18일 배가 두꺼운 부빙에 갇히자 그들의 기쁨은 빠르게 두려움으로 바뀌었다. "이런! 마치 초콜릿 바 한가운데 박힌 아몬드처럼 꽁꽁 얼어붙었잖아!"라고 대원 중 한 명이 외쳤다. 섀클턴과 그의 대원들은 배를 버리고 유빙 위에 야영지를 차려야 했으며, 그곳에서 겨울을 보내도록 강요받게 되었다. 각 대원은 침낭을 받고 다섯 개의 텐트 중 하나에 배정되었다. 섀클턴은 더 좋은 침낭을 다른 대원들에게 양보하고, 갈등을 일으킬 소지가 있는 문제적 인물들 곁에 머물기로 했다. 방수가 되지 않는 캠핑 매트 때문에 그들은 항상 젖어 있었다. 대원들은 혹독한 추위에 몸을 떨고 동상을 입었다. 설상가상으로, 그들이 야영하고 있던 유빙이 발아래에서 갈라지기 시작했다. 섀클턴은 대원들의 안전을 위해 정기적으로 돌아다니며 얼음 상태를 점검했다. 어떤 밤에는 섀클턴과 대원들이 텐트를 걷어서, 얼음이 갈라질 가능성이 낮은 더 안전한 지역으로 야영지를 옮겨야 했다.
+    </div>
+  </div>
+
+  <!-- TAB 4: 주제·구조 -->
+  <div class="section" id="p0-tab3">
+    <div class="section-header"><h2>주제 · 요지 · 구조</h2><div class="sh-line"></div></div>
+    <div class="topic-card">
+      <div class="tc-label">Topic (주제)</div>
+      <div class="tc-content">남극 탐험 도중 빙하에 갇힌 위기 상황과 섀클턴의 희생적 리더십</div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">Main Idea (요지)</div>
+      <div class="tc-content">섀클턴은 빙하에 갇히는 극한의 위기 속에서도 자신의 편의보다 대원들의 안전을 먼저 챙기는 헌신적 리더십으로 집단을 이끌었다.</div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">Structure (구조)</div>
+      <div class="tc-content">
+        <div class="structure-flow">
+          <div class="structure-step"><span class="step-badge">도입</span><span class="step-text">1914년 8월, 섀클턴의 남극 횡단 출발 — 역사적 배경 제시</span></div>
+          <div class="structure-step"><span class="step-badge">위기 발생</span><span class="step-text">1915년 1월 엔듀런스호 빙하 조난 — 기쁨이 두려움으로 전환</span></div>
+          <div class="structure-step"><span class="step-badge">리더십 ①</span><span class="step-text">섀클턴의 희생 — 좋은 침낭 양보, 문제적 인물 곁 자처</span></div>
+          <div class="structure-step"><span class="step-badge">고난 묘사</span><span class="step-text">젖은 매트, 동상, 갈라지는 빙하 — 극한 환경 구체화</span></div>
+          <div class="structure-step"><span class="step-badge">리더십 ②</span><span class="step-text">빙하 점검 + 야영지 이동 — 대원 안전을 위한 능동적 행동</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">전체 흐름 연결 (3개 지문 관점)</div>
+      <div class="tc-content">이 지문은 섀클턴 이야기의 <strong>위기 설정(도입부)</strong>이다. 배가 빙하에 갇히는 절망적 상황을 배경으로, 섀클턴의 리더십 특성(희생·관리·선제 행동)이 처음 드러난다. 이후 지문 2(침몰·생존), 지문 3(탈출·생환)으로 이어지는 3막 구조의 첫 번째 막.</div>
+    </div>
+  </div>
+
+  <!-- TAB 5: 변형문제 -->
+  <div class="section" id="p0-tab4">
+    <div class="section-header"><h2>변형문제</h2><div class="sh-line"></div></div>
+
+    <!-- Q1 주제추론 -->
+    <div class="quiz-block" id="p0q1">
+      <div class="q-type">주제추론</div>
+      <div class="q-text">1. 다음 글의 주제로 가장 적절한 것은?</div>
+      <div class="q-passage">On August 1, 1914, Ernest Shackleton departed London ... Shackleton walked around inspecting the ice regularly for the crew members' safety. Some nights, Shackleton and his men had to pick up their tents, moving their camp to a more secure area where the ice was less likely to break.</div>
+      <button class="choice-btn" onclick="checkAnswer('p0q1',this,false)">① the history of Antarctic exploration since the early 1900s</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q1',this,false)">② the scientific value of Antarctic research expeditions</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q1',this,true)">③ Shackleton's self-sacrificing leadership in an extreme survival crisis</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q1',this,false)">④ the dangers of traveling by ship through Arctic waters</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q1',this,false)">⑤ the importance of proper equipment in cold-weather expeditions</button>
+      <div class="quiz-result" id="p0q1-result"></div>
+      <div class="quiz-explain" id="p0q1-explain" style="display:none">섀클턴이 침낭 양보·문제적 인물 관리·빙하 점검 등 대원을 위한 희생적 행동을 반복하는 것이 글의 핵심. ①②는 역사·과학적 내용으로 지나치게 넓음. ④⑤는 세부 사항.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p0q1')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q2 빈칸추론 -->
+    <div class="quiz-block" id="p0q2">
+      <div class="q-type">빈칸추론</div>
+      <div class="q-text">2. 다음 빈칸에 들어갈 말로 가장 적절한 것은?</div>
+      <div class="q-passage">Shackleton yielded the better sleeping bags to other crew members and chose to stay with the group's more troublesome characters. This showed that his leadership was built on ________ rather than personal comfort.</div>
+      <button class="choice-btn" onclick="checkAnswer('p0q2',this,false)">① strict discipline</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q2',this,false)">② scientific planning</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q2',this,true)">③ self-sacrifice</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q2',this,false)">④ physical strength</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q2',this,false)">⑤ democratic decision-making</button>
+      <div class="quiz-result" id="p0q2-result"></div>
+      <div class="quiz-explain" id="p0q2-explain" style="display:none">좋은 침낭을 다른 이에게 양보하고, 문제적 인물 옆을 자처한 행동은 자기희생(self-sacrifice)의 리더십을 보여준다.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p0q2')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q3 어법 -->
+    <div class="quiz-block" id="p0q3">
+      <div class="q-type">어법오류</div>
+      <div class="q-text">3. 다음 밑줄 친 부분 중 어법상 틀린 것은?</div>
+      <div class="q-passage">① <u>Little did they know</u> the journey ahead would be one of the most challenging adventures in history. Shackleton and his men had to abandon their ship and set up camp on the floating ice, ② <u>where</u> they would be forced to spend the winter. Each man ③ <u>was given</u> a sleeping bag. The floating ice on ④ <u>which</u> they were camped began ⑤ <u>to cracking</u> beneath them.</div>
+      <button class="choice-btn" onclick="checkAnswer('p0q3',this,false)">① Little did they know</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q3',this,false)">② where</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q3',this,false)">③ was given</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q3',this,false)">④ which</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q3',this,true)">⑤ to cracking</button>
+      <div class="quiz-result" id="p0q3-result"></div>
+      <div class="quiz-explain" id="p0q3-explain" style="display:none">begin은 to부정사 또는 동명사를 목적어로 취하지만, 'to cracking'처럼 to부정사와 동명사를 혼합할 수 없다. 'began cracking' 또는 'began to crack'으로 고쳐야 한다.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p0q3')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q4 내용불일치 -->
+    <div class="quiz-block" id="p0q4">
+      <div class="q-type">내용불일치</div>
+      <div class="q-text">4. 본문의 내용과 일치하지 않는 것은?</div>
+      <button class="choice-btn" onclick="checkAnswer('p0q4',this,false)">① 섀클턴은 1914년 8월 1일 런던을 출발했다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q4',this,false)">② 배가 빙하에 갇힌 것은 1915년 1월이었다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q4',this,true)">③ 섀클턴은 자신을 위해 가장 좋은 침낭을 챙겼다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q4',this,false)">④ 캠핑 매트는 방수가 되지 않아 항상 젖어 있었다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q4',this,false)">⑤ 섀클턴은 대원들의 안전을 위해 정기적으로 빙하를 점검했다.</button>
+      <div class="quiz-result" id="p0q4-result"></div>
+      <div class="quiz-explain" id="p0q4-explain" style="display:none">③은 반대. 섀클턴은 더 좋은 침낭을 다른 대원들에게 양보(yielded)하고 자신은 문제적 인물들 곁에 머물렀다.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p0q4')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q5 글의순서 -->
+    <div class="quiz-block" id="p0q5">
+      <div class="q-type">글의순서</div>
+      <div class="q-text">5. 주어진 문장 다음에 이어질 글의 순서로 가장 적절한 것은?</div>
+      <div class="q-passage">Shackleton and his men had to abandon their ship and set up camp on the floating ice.</div>
+      <div class="q-passage" style="margin-top:8px">
+        (A) The camping mats were not waterproof, so they were constantly wet. The men shivered in the severe cold and suffered from frostbite.<br>
+        (B) Each man was given a sleeping bag and was assigned to one of five tents.<br>
+        (C) Worst of all, the floating ice on which they were camped began cracking beneath them.
+      </div>
+      <button class="choice-btn" onclick="checkAnswer('p0q5',this,false)">① (A)-(B)-(C)</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q5',this,false)">② (A)-(C)-(B)</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q5',this,true)">③ (B)-(A)-(C)</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q5',this,false)">④ (B)-(C)-(A)</button>
+      <button class="choice-btn" onclick="checkAnswer('p0q5',this,false)">⑤ (C)-(A)-(B)</button>
+      <div class="quiz-result" id="p0q5-result"></div>
+      <div class="quiz-explain" id="p0q5-explain" style="display:none">야영 시작 → (B) 침낭·텐트 배정 → (A) 방수 안 되는 매트·동상 → (C) 'Worst of all' 빙하 균열로 고조. Worst of all은 최고 절정을 마지막에 배치해야 자연스럽다.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p0q5')">↺ 다시풀기</button>
+    </div>
+  </div>
+
+  <!-- TAB 6: 서술형 -->
+  <div class="section" id="p0-tab5">
+    <div class="section-header"><h2>서술형</h2><div class="sh-line"></div></div>
+
+    <div class="seosul-block">
+      <div class="s-num">서술형 1</div>
+      <div class="s-text">섀클턴이 더 문제가 될 수 있는 대원들 곁에 머물기로 선택한 이유를 본문에서 근거를 찾아 우리말로 쓰시오.</div>
+      <div class="s-cond">조건: 본문 내용에 근거하여 30자 내외로 쓸 것.</div>
+      <div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div>
+    </div>
+
+    <div class="seosul-block">
+      <div class="s-num">서술형 2</div>
+      <div class="s-text">다음 문장에서 어법상 틀린 부분을 찾아 올바르게 고쳐 문장 전체를 다시 쓰시오.<br><br><em>"Little they knew the journey ahead would be one of the most challenging adventures in history."</em></div>
+      <div class="s-cond">조건: 어법상 올바른 완전한 문장으로 쓸 것.</div>
+      <div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB 7: 정답지 -->
+  <div class="section" id="p0-tab6">
+    <div class="section-header"><h2>정답지</h2><div class="sh-line"></div></div>
+
+    <div class="answer-key-section">
+      <div class="ak-title">▶ 변형문제 정답 및 해설</div>
+      <div class="variform-answer"><span class="va-num">1</span><span class="va-ans">③</span><span class="va-exp">글 전체가 섀클턴의 희생적·능동적 리더십을 보여주는 구체적 행동들로 구성되어 있음.</span></div>
+      <div class="variform-answer"><span class="va-num">2</span><span class="va-ans">③</span><span class="va-exp">self-sacrifice(자기희생) — 침낭 양보와 문제적 인물 곁 자처가 근거.</span></div>
+      <div class="variform-answer"><span class="va-num">3</span><span class="va-ans">⑤</span><span class="va-exp">'to cracking' → 'cracking' 또는 'to crack'. begin은 동명사/to부정사 모두 가능하나 혼합 불가.</span></div>
+      <div class="variform-answer"><span class="va-num">4</span><span class="va-ans">③</span><span class="va-exp">섀클턴은 더 좋은 침낭을 다른 대원들에게 양보(yielded)함. 자신을 위해 챙긴 것이 아님.</span></div>
+      <div class="variform-answer"><span class="va-num">5</span><span class="va-ans">③</span><span class="va-exp">(B)침낭·배정 → (A)방수 불가·동상 → (C)Worst of all 빙하 균열. 상황 악화의 흐름.</span></div>
+    </div>
+
+    <div class="answer-key-section">
+      <div class="ak-title">▶ 서술형 모범답안</div>
+      <div class="seosul-answer">
+        <div class="sa-num">서술형 1</div>
+        <div class="sa-ans">그들이 갈등에 휘말릴 수 있어, 집단 내 분쟁을 예방하고 대원 전체의 안전과 화합을 지키기 위해서이다.</div>
+      </div>
+      <div class="seosul-answer">
+        <div class="sa-num">서술형 2</div>
+        <div class="sa-ans">Little did they know the journey ahead would be one of the most challenging adventures in history.<br><small style="color:#888">(부정어 Little이 문두로 올 때 주어·조동사 도치 필수: Little did they know ~)</small></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- ===================== END PASSAGE 1 ===================== -->
+<!-- ===================== PASSAGE 2 ===================== -->
+<div class="passage-section" id="passage-1" style="display:none">
+
+  <!-- TAB 1: 문장분석 -->
+  <div class="section active" id="p1-tab0">
+    <div class="section-header"><h2>문장분석</h2><div class="sh-line"></div></div>
+
+    <div class="passage-box">
+      <span class="sentence-num">1</span>Days went by, and all the crew members could see for miles around was ice.
+      <span class="sentence-num">2</span>Despite the hopeless situation, Shackleton tried to make the crew at ease with his humor.
+      <span class="sentence-num">3</span>A crew member even played his banjo to relieve the crew members' anxiety and depression.
+      <span class="sentence-num">4</span>Seldom were they happy, though.
+      <span class="sentence-num">5</span>In the rare happy moments, music became a kind of mental medicine.
+      <span class="sentence-num">6</span>Shackleton's open and honest communication was helpful to the crew members.
+      <br><br>
+      <span class="sentence-num">7</span>The crew members struggled in the hope of getting back on the Endurance one day, but that day would never come.
+      <span class="sentence-num">8</span>"She's going, boys!" Shackleton shouted on the evening of November 21, 1915, witnessing his ship finally breaking up and sinking into the Weddell Sea.
+      <br><br>
+      <span class="sentence-num">9</span>The 28 men were now isolated on drifting ice hundreds of miles from land, with no ship, no means of communication with the outside world, and limited supplies.
+      <span class="sentence-num">10</span>Realizing the need for a new survival plan, Shackleton established daily routines for his men.
+      <span class="sentence-num">11</span>The crew members began each day with breakfast and performed daily tasks such as hunting for food and making improvements to the three lifeboats which were previously rescued from the sunken ship.
+      <span class="sentence-num">12</span>Time was also set aside for activities like reading or exercising.
+      <span class="sentence-num">13</span>The crew sang songs, celebrated their crew members' birthdays, and even played football matches on the ice.
+      <span class="sentence-num">14</span>Even in these occasional moments of joy, at night, the men had to take turns watching for any ice breaking beneath their feet.
+    </div>
+
+    <!-- S1 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">1</span>Days went by, and all the crew members could see for miles around was ice.</div>
+      <div class="slash-reading">날들이 흘러갔고, / 선원들이 수 마일 사방에서 볼 수 있는 것이라고는 / 오직 얼음뿐이었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">관계대명사 what</span>'all [that] the crew members could see ... was ice'에서 all을 선행사로 하는 관계대명사절. all 뒤에 that 생략. 'what they could see' 형태로도 바꿔쓸 수 있음.</li>
+        <li><span class="grammar-tag">go by</span>'Days went by' = 날들이 지나가다. 시간의 경과를 나타내는 관용 표현.</li>
+      </ul>
+    </div>
+
+    <!-- S4 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">4</span>Seldom were they happy, though.</div>
+      <div class="slash-reading">하지만 그들이 행복한 경우는 드물었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">부정어 도치</span>'Seldom'이 문두에 오면서 주어·조동사 도치(were they). 지문 1의 'Little did they know'와 동일한 구조. 수능 어법 핵심 유형.</li>
+        <li><span class="grammar-tag">양보 though</span>문장 끝의 'though'는 '그러나, 하지만'의 부사적 사용. 접속사(= although)와 구별.</li>
+      </ul>
+    </div>
+
+    <!-- S7 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">7</span>The crew members struggled in the hope of getting back on the Endurance one day, but that day would never come.</div>
+      <div class="slash-reading">선원들은 / 언젠가 엔듀런스호에 다시 오르기를 바라며 버텼지만, / 그날은 결코 오지 않을 것이었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">in the hope of</span>'in the hope of + 동명사' = ~하기를 바라며. 전치사 of 뒤 동명사 getting. to부정사 불가.</li>
+        <li><span class="grammar-tag">조동사 would</span>'would never come'에서 would는 과거 시점에서의 미래 또는 강한 의지 부정. 서사적 과거 미래 용법.</li>
+      </ul>
+    </div>
+
+    <!-- S8 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">8</span>"She's going, boys!" Shackleton shouted on the evening of November 21, 1915, witnessing his ship finally breaking up and sinking into the Weddell Sea.</div>
+      <div class="slash-reading">"배가 가라앉는다, 대원들!" / 섀클턴은 소리쳤다 / 1915년 11월 21일 저녁에, / 자신의 배가 마침내 부서지며 웨들 해로 침몰하는 것을 목격하면서.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">분사구문 동시</span>'witnessing his ship finally breaking up and sinking' — 동시 동작 분사구문(= as he witnessed).</li>
+        <li><span class="grammar-tag">지각동사 목적격보어</span>'witness + 목적어 + 현재분사' — 지각동사 후 목적격보어로 현재분사(진행) 사용. breaking up and sinking이 병렬.</li>
+      </ul>
+    </div>
+
+    <!-- S9 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">9</span>The 28 men were now isolated on drifting ice hundreds of miles from land, with no ship, no means of communication with the outside world, and limited supplies.</div>
+      <div class="slash-reading">28명의 대원들은 이제 / 육지에서 수백 마일 떨어진 표류하는 얼음 위에 고립되었다, / 배도 없고, 외부 세계와의 통신 수단도 없고, 물자도 제한된 채로.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">with 독립분사구문</span>'with no ship, no means ... and limited supplies'는 'with + 명사(구)'의 부대상황 표현. 동반 상태/상황을 부가적으로 설명.</li>
+        <li><span class="grammar-tag">병렬 명사구</span>'no ship, no means of communication ..., and limited supplies' — 세 명사구의 병렬.</li>
+      </ul>
+    </div>
+
+    <!-- S10 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">10</span>Realizing the need for a new survival plan, Shackleton established daily routines for his men.</div>
+      <div class="slash-reading">새로운 생존 계획의 필요성을 깨닫고, / 섀클턴은 대원들을 위한 일과를 확립했다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">분사구문 이유</span>'Realizing the need for a new survival plan' — 이유(= Because he realized)를 나타내는 분사구문. 주절과 주어 동일(Shackleton).</li>
+        <li><span class="grammar-tag">리더십 맥락</span>위기 상황에서 일과 확립은 심리적 안정·목적의식 제공의 역할. 지문 전반의 '능동적 리더십' 주제를 심화.</li>
+      </ul>
+    </div>
+
+    <!-- S11 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">11</span>The crew members began each day with breakfast and performed daily tasks such as hunting for food and making improvements to the three lifeboats which were previously rescued from the sunken ship.</div>
+      <div class="slash-reading">선원들은 매일 아침식사로 하루를 시작하고 / 일상적인 임무를 수행했다 / 식량 사냥과 / 침몰한 배에서 구조된 세 척의 구명보트 개선 작업 같은.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">such as + 동명사</span>'such as hunting ... and making improvements' — 예시를 드는 such as 뒤에 동명사 병렬.</li>
+        <li><span class="grammar-tag">관계대명사 which</span>'the three lifeboats which were previously rescued' — 선행사 lifeboats를 수식하는 주격 관계대명사. 수동태 rescued 주의.</li>
+      </ul>
+    </div>
+
+    <!-- S14 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">14</span>Even in these occasional moments of joy, at night, the men had to take turns watching for any ice breaking beneath their feet.</div>
+      <div class="slash-reading">이런 가끔의 기쁜 순간에도, / 밤에는, / 대원들은 번갈아가며 / 발아래에서 부서지는 얼음이 있는지 살펴봐야 했다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">take turns + 동명사</span>'take turns watching' = 번갈아가며 ~하다. take turns 뒤에는 동명사(-ing) 사용.</li>
+        <li><span class="grammar-tag">현재분사 수식</span>'any ice breaking beneath their feet' — breaking은 ice를 수식하는 현재분사(진행 중인 상태).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TAB 2: 문법총정리 -->
+  <div class="section" id="p1-tab1">
+    <div class="section-header"><h2>문법총정리</h2><div class="sh-line"></div></div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">① 부정어 도치 (반복 강화)</div>
+      <div class="g-title">Seldom were they happy</div>
+      <div class="g-evidence">"Seldom were they happy, though."</div>
+      <div class="g-point">지문 1의 Little did they know에 이어 이 지문에서도 부정어 도치가 반복. 부정의 의미를 가진 부사어(Seldom, Never, Little, Hardly, Rarely 등)가 문두로 이동하면 주어·조동사 도치 필수. 수능 빈출.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">② 분사구문 (이유·동시)</div>
+      <div class="g-title">Realizing the need / witnessing his ship</div>
+      <div class="g-evidence">"Realizing the need for a new survival plan, Shackleton established daily routines for his men." / "Shackleton shouted ... witnessing his ship finally breaking up and sinking into the Weddell Sea."</div>
+      <div class="g-point">Realizing은 이유(Because he realized), witnessing은 동시 동작(as he witnessed)의 분사구문. 두 경우 모두 주절 주어(Shackleton)와 동일하므로 주어 생략 가능.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">③ 지각동사 + 목적격보어</div>
+      <div class="g-title">witnessing his ship breaking up and sinking</div>
+      <div class="g-evidence">"witnessing his ship finally breaking up and sinking into the Weddell Sea."</div>
+      <div class="g-point">지각동사(see, watch, witness 등) 후 목적격보어로 현재분사(동작 진행) 또는 동사원형(동작 완료) 모두 가능. 현재분사 breaking, sinking은 진행 중인 침몰을 생생하게 묘사.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">④ with 부대상황</div>
+      <div class="g-title">with no ship, no means ..., and limited supplies</div>
+      <div class="g-evidence">"The 28 men were now isolated on drifting ice ... with no ship, no means of communication with the outside world, and limited supplies."</div>
+      <div class="g-point">'with + 명사(구)'의 부대상황 표현은 동반 조건·상태를 부가 설명. '~한 채로, ~한 상황에서'로 해석. 세 명사구가 and로 병렬 연결됨.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">⑤ in the hope of + 동명사</div>
+      <div class="g-title">in the hope of getting back</div>
+      <div class="g-evidence">"The crew members struggled in the hope of getting back on the Endurance one day."</div>
+      <div class="g-point">'in the hope of + 동명사'는 '~하기를 바라며'의 전치사구. 전치사 of 뒤에는 to부정사가 아닌 동명사(getting)가 와야 함. 수능 어법 오류 유형으로 자주 출제.</div>
+    </div>
+  </div>
+
+  <!-- TAB 3: 전문해석 -->
+  <div class="section" id="p1-tab2">
+    <div class="section-header"><h2>전문해석</h2><div class="sh-line"></div></div>
+    <div class="translation-box">
+      날들이 흘러갔고, 선원들이 수 마일 사방에서 볼 수 있는 것이라고는 오직 얼음뿐이었다. 절망적인 상황에도 불구하고, 섀클턴은 유머로 대원들을 편안하게 해주려 했다. 한 대원은 불안과 우울을 해소하기 위해 밴조를 연주하기까지 했다. 그러나 그들이 행복한 순간은 드물었다. 드문 행복의 순간에, 음악은 일종의 정신적 약이 되었다. 섀클턴의 개방적이고 솔직한 소통은 대원들에게 큰 도움이 되었다.<br><br>
+      대원들은 언젠가 엔듀런스호에 다시 오르기를 바라며 버텼지만, 그날은 결코 오지 않을 것이었다. "배가 가라앉는다, 대원들!" 섀클턴은 1915년 11월 21일 저녁, 자신의 배가 마침내 부서지며 웨들 해로 침몰하는 것을 목격하며 외쳤다.<br><br>
+      28명의 대원들은 이제 육지에서 수백 마일 떨어진 표류하는 얼음 위에 고립되었다 — 배도 없고, 외부 세계와의 통신 수단도 없고, 물자도 제한된 채로. 새로운 생존 계획의 필요성을 깨닫고, 섀클턴은 대원들을 위한 일과를 확립했다. 대원들은 매일 아침식사로 하루를 시작하고, 식량 사냥과 침몰한 배에서 구조된 세 척의 구명보트 개선 작업 같은 일상 임무를 수행했다. 독서나 운동 같은 활동을 위한 시간도 따로 마련되었다. 대원들은 노래를 부르고, 서로의 생일을 축하하고, 얼음 위에서 축구 경기까지 했다. 그러나 이런 가끔의 기쁜 순간에도, 밤에는 대원들이 번갈아가며 발아래에서 얼음이 부서지는지 살펴봐야 했다.
+    </div>
+  </div>
+
+  <!-- TAB 4: 주제·구조 -->
+  <div class="section" id="p1-tab3">
+    <div class="section-header"><h2>주제 · 요지 · 구조</h2><div class="sh-line"></div></div>
+    <div class="topic-card">
+      <div class="tc-label">Topic (주제)</div>
+      <div class="tc-content">엔듀런스호 침몰 후 빙하 위 생존 과정에서의 심리적·실용적 대처</div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">Main Idea (요지)</div>
+      <div class="tc-content">섀클턴은 배가 침몰하는 최악의 상황에서도 유머·소통·일과 확립으로 대원들의 심리적 안정과 생존 의지를 지속시켰다.</div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">Structure (구조)</div>
+      <div class="tc-content">
+        <div class="structure-flow">
+          <div class="structure-step"><span class="step-badge">심리 관리</span><span class="step-text">유머·밴조·소통으로 절망적 상황에서 대원들의 정서 안정 유지</span></div>
+          <div class="structure-step"><span class="step-badge">위기 절정</span><span class="step-text">1915년 11월 엔듀런스호 최종 침몰 — 희망의 완전한 소멸</span></div>
+          <div class="structure-step"><span class="step-badge">새 계획</span><span class="step-text">일과 확립(아침식사·사냥·구명보트 개선·독서·운동) — 생존 루틴 구조화</span></div>
+          <div class="structure-step"><span class="step-badge">역설적 일상</span><span class="step-text">생일 축하·축구 — 즐거움과 경계 병존하는 역설적 생존</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">전체 흐름 연결 (3개 지문 관점)</div>
+      <div class="tc-content">지문 2는 <strong>위기 심화 및 적응(전개부)</strong>이다. 지문 1에서 시작된 위기가 침몰로 정점을 찍고, 섀클턴이 일과·심리 관리로 생존 체계를 재정립하는 과정. 지문 3의 탈출 시도를 위한 준비 단계이기도 하다.</div>
+    </div>
+  </div>
+
+  <!-- TAB 5: 변형문제 -->
+  <div class="section" id="p1-tab4">
+    <div class="section-header"><h2>변형문제</h2><div class="sh-line"></div></div>
+
+    <!-- Q1 -->
+    <div class="quiz-block" id="p1q1">
+      <div class="q-type">주제추론</div>
+      <div class="q-text">1. 다음 글의 주제로 가장 적절한 것은?</div>
+      <div class="q-passage">Despite the hopeless situation, Shackleton tried to make the crew at ease with his humor. ... Realizing the need for a new survival plan, Shackleton established daily routines for his men. ... The crew sang songs, celebrated their crew members' birthdays, and even played football matches on the ice.</div>
+      <button class="choice-btn" onclick="checkAnswer('p1q1',this,false)">① the devastating effects of isolation on mental health</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q1',this,false)">② the role of music in exploring polar regions</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q1',this,true)">③ Shackleton's psychological and practical strategies for crew survival</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q1',this,false)">④ the physical dangers of living on drifting Antarctic ice</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q1',this,false)">⑤ how Antarctic expeditions are planned and organized</button>
+      <div class="quiz-result" id="p1q1-result"></div>
+      <div class="quiz-explain" id="p1q1-explain" style="display:none">유머·소통(심리)과 일과 확립(실용)이 함께 제시되어 있어 ③이 가장 포괄적. ①은 결과 서술에 치우침. ②④⑤는 지엽적.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p1q1')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-block" id="p1q2">
+      <div class="q-type">빈칸추론</div>
+      <div class="q-text">2. 다음 빈칸에 들어갈 말로 가장 적절한 것은?</div>
+      <div class="q-passage">In the rare happy moments, music became a kind of ________ for the men trapped on the ice.</div>
+      <button class="choice-btn" onclick="checkAnswer('p1q2',this,false)">① physical training</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q2',this,false)">② survival equipment</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q2',this,true)">③ mental medicine</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q2',this,false)">④ navigation tool</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q2',this,false)">⑤ rescue signal</button>
+      <div class="quiz-result" id="p1q2-result"></div>
+      <div class="quiz-explain" id="p1q2-explain" style="display:none">본문에 'music became a kind of mental medicine'이 직접 제시되어 있음. 극한 상황에서의 심리적 치유 역할.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p1q2')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-block" id="p1q3">
+      <div class="q-type">어법오류</div>
+      <div class="q-text">3. 다음 밑줄 친 부분 중 어법상 틀린 것은?</div>
+      <div class="q-passage">① <u>Seldom were they happy</u>, though. The crew members struggled in the hope of ② <u>to get</u> back on the Endurance. ③ <u>Realizing</u> the need for a new survival plan, Shackleton established daily routines. The men had to ④ <u>take turns watching</u> for any ice ⑤ <u>breaking</u> beneath their feet.</div>
+      <button class="choice-btn" onclick="checkAnswer('p1q3',this,false)">① Seldom were they happy</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q3',this,true)">② to get</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q3',this,false)">③ Realizing</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q3',this,false)">④ take turns watching</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q3',this,false)">⑤ breaking</button>
+      <div class="quiz-result" id="p1q3-result"></div>
+      <div class="quiz-explain" id="p1q3-explain" style="display:none">'in the hope of' 뒤에는 동명사가 와야 함. 'to get' → 'getting'으로 고쳐야 함. 전치사 of 뒤에는 to부정사 불가.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p1q3')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-block" id="p1q4">
+      <div class="q-type">내용불일치</div>
+      <div class="q-text">4. 본문의 내용과 일치하지 않는 것은?</div>
+      <button class="choice-btn" onclick="checkAnswer('p1q4',this,false)">① 한 대원이 불안 해소를 위해 밴조를 연주했다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q4',this,false)">② 엔듀런스호는 1915년 11월 21일 저녁에 침몰했다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q4',this,false)">③ 섀클턴은 침몰 후 대원들을 위한 일과를 확립했다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q4',this,true)">④ 대원들은 기쁜 순간이 많아서 밤 경계를 서지 않았다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q4',this,false)">⑤ 대원들은 얼음 위에서 축구 경기를 하기도 했다.</button>
+      <div class="quiz-result" id="p1q4-result"></div>
+      <div class="quiz-explain" id="p1q4-explain" style="display:none">④는 반대. 기쁜 순간은 '드물었으며(Seldom)', 그 순간에도 밤에는 번갈아 빙하 경계를 서야 했다.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p1q4')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-block" id="p1q5">
+      <div class="q-type">글의순서</div>
+      <div class="q-text">5. 주어진 문장 다음에 이어질 글의 순서로 가장 적절한 것은?</div>
+      <div class="q-passage">The 28 men were now isolated on drifting ice hundreds of miles from land, with no ship, no means of communication with the outside world, and limited supplies.</div>
+      <div class="q-passage" style="margin-top:8px">
+        (A) The crew sang songs, celebrated their crew members' birthdays, and even played football matches on the ice.<br>
+        (B) Realizing the need for a new survival plan, Shackleton established daily routines for his men.<br>
+        (C) The crew members began each day with breakfast and performed daily tasks such as hunting for food and making improvements to the three lifeboats.
+      </div>
+      <button class="choice-btn" onclick="checkAnswer('p1q5',this,false)">① (A)-(B)-(C)</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q5',this,false)">② (A)-(C)-(B)</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q5',this,false)">③ (C)-(A)-(B)</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q5',this,true)">④ (B)-(C)-(A)</button>
+      <button class="choice-btn" onclick="checkAnswer('p1q5',this,false)">⑤ (C)-(B)-(A)</button>
+      <div class="quiz-result" id="p1q5-result"></div>
+      <div class="quiz-explain" id="p1q5-explain" style="display:none">(B) 일과 확립 결정 → (C) 구체적 일과 내용 → (A) 여가 활동. 계획 수립 → 실행 → 여가의 자연스러운 흐름.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p1q5')">↺ 다시풀기</button>
+    </div>
+  </div>
+
+  <!-- TAB 6: 서술형 -->
+  <div class="section" id="p1-tab5">
+    <div class="section-header"><h2>서술형</h2><div class="sh-line"></div></div>
+
+    <div class="seosul-block">
+      <div class="s-num">서술형 1</div>
+      <div class="s-text">섀클턴이 빙하 위 생존 중 대원들의 심리적 안정을 위해 취한 구체적인 방법 두 가지를 본문에서 찾아 우리말로 쓰시오.</div>
+      <div class="s-cond">조건: 각각 15자 내외, 본문 내용에 근거할 것.</div>
+      <div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div></div>
+    </div>
+
+    <div class="seosul-block">
+      <div class="s-num">서술형 2</div>
+      <div class="s-text">다음 밑줄 친 부분을 어법에 맞게 고쳐 문장 전체를 다시 쓰시오.<br><br><em>"The crew members struggled in the hope of <u>to get</u> back on the Endurance one day."</em></div>
+      <div class="s-cond">조건: 어법에 맞게 완전한 문장으로 쓸 것.</div>
+      <div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB 7: 정답지 -->
+  <div class="section" id="p1-tab6">
+    <div class="section-header"><h2>정답지</h2><div class="sh-line"></div></div>
+
+    <div class="answer-key-section">
+      <div class="ak-title">▶ 변형문제 정답 및 해설</div>
+      <div class="variform-answer"><span class="va-num">1</span><span class="va-ans">③</span><span class="va-exp">유머·소통(심리적)과 일과 확립(실용적) 전략을 모두 포함하는 ③이 가장 포괄적.</span></div>
+      <div class="variform-answer"><span class="va-num">2</span><span class="va-ans">③</span><span class="va-exp">본문 직접 근거: "music became a kind of mental medicine."</span></div>
+      <div class="variform-answer"><span class="va-num">3</span><span class="va-ans">②</span><span class="va-exp">'in the hope of' 뒤 전치사 of → 동명사 필수. to get → getting.</span></div>
+      <div class="variform-answer"><span class="va-num">4</span><span class="va-ans">④</span><span class="va-exp">기쁜 순간은 드물었고(Seldom were they happy), 밤에는 여전히 얼음 경계를 섰음.</span></div>
+      <div class="variform-answer"><span class="va-num">5</span><span class="va-ans">④</span><span class="va-exp">(B)일과 확립 → (C)구체적 일과 내용 → (A)여가 활동의 순서.</span></div>
+    </div>
+
+    <div class="answer-key-section">
+      <div class="ak-title">▶ 서술형 모범답안</div>
+      <div class="seosul-answer">
+        <div class="sa-num">서술형 1</div>
+        <div class="sa-ans">① 유머를 사용하여 대원들을 편안하게 해주었다.<br>② 개방적이고 솔직한 소통으로 대원들을 도왔다.<br><small style="color:#888">(밴조 연주 허용·생일 축하·일과 확립도 부분 인정 가능)</small></div>
+      </div>
+      <div class="seosul-answer">
+        <div class="sa-num">서술형 2</div>
+        <div class="sa-ans">The crew members struggled in the hope of getting back on the Endurance one day.<br><small style="color:#888">(전치사 of 뒤 → 동명사: to get → getting)</small></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- ===================== END PASSAGE 2 ===================== -->
+<!-- ===================== PASSAGE 3 ===================== -->
+<div class="passage-section" id="passage-2" style="display:none">
+
+  <!-- TAB 1: 문장분석 -->
+  <div class="section active" id="p2-tab0">
+    <div class="section-header"><h2>문장분석</h2><div class="sh-line"></div></div>
+
+    <div class="passage-box">
+      <span class="sentence-num">1</span>On April 9, 1916, the floating ice began to crack, and Shackleton gave the order: "Launch the boats."
+      <span class="sentence-num">2</span>They traveled across the sea ice and then the open water.
+      <span class="sentence-num">3</span>They fought against freezing sea water pouring into the boats before they finally reached Elephant Island 6 days later, on April 15.
+      <span class="sentence-num">4</span>The island was far from any shipping routes, so they were not likely to be found and rescued.
+      <br><br>
+      <span class="sentence-num">5</span>On April 20, with four crew members, Shackleton set off on a risky journey in a small lifeboat to seek help from a whaling station on South Georgia Island, which was 1,300 km away.
+      <span class="sentence-num">6</span>He took some of the troublesome characters with him so that the remaining crew would not fight while on Elephant Island.
+      <span class="sentence-num">7</span>Each morning on the island, Frank Wild, whom Shackleton had left in charge, called everyone to be ready to depart.
+      <span class="sentence-num">8</span>"The Boss may come today!" he declared daily.
+      <br><br>
+      <span class="sentence-num">9</span>Shackleton and the four crew members finally reached South Georgia Island on May 10.
+      <span class="sentence-num">10</span>Still, their struggle was not over yet.
+      <span class="sentence-num">11</span>The whaling station was located on the other side of a mountain range.
+      <span class="sentence-num">12</span>They had to cross the rocky mountains on foot.
+      <span class="sentence-num">13</span>They stopped to rest for a while, and the exhausted men fell asleep right away.
+      <span class="sentence-num">14</span>Shackleton woke them up after only a five-minute nap, which saved them from freezing to death.
+      <span class="sentence-num">15</span>When they arrived at the whaling station, Shackleton hurried to arrange for a rescue ship, the Yelcho, to be sent to Elephant Island.
+      <br><br>
+      <span class="sentence-num">16</span>On August 30, 1916, the crew members on Elephant Island spotted a ship.
+      <span class="sentence-num">17</span>Upon hearing the news of the rescue ship's arrival, everyone rushed out of camp.
+      <span class="sentence-num">18</span>"Are you alright?" Shackleton called out.
+      <span class="sentence-num">19</span>"All well!" came the reply.
+      <span class="sentence-num">20</span>All 28 men on the island were rescued alive and safe.
+      <span class="sentence-num">21</span>After 634 days of drifting in the Antarctic, the crew had finally reached the end of their long and harsh journey.
+      <span class="sentence-num">22</span>"I have done it," Shackleton wrote to his wife. "Not a life lost, and we have been through hell."
+    </div>
+
+    <!-- S3 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">3</span>They fought against freezing sea water pouring into the boats before they finally reached Elephant Island 6 days later, on April 15.</div>
+      <div class="slash-reading">그들은 보트 안으로 쏟아지는 얼어붙은 바닷물과 싸웠다 / 그들이 마침내 엘리펀트 섬에 도달하기 전까지 / 6일 후인 4월 15일에.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">현재분사 수식</span>'freezing sea water pouring into the boats' — pouring은 sea water를 수식하는 현재분사(진행 중인 동작).</li>
+        <li><span class="grammar-tag">시간 before</span>'before they finally reached'는 시간 부사절. '~하기 전에'의 의미로 주절(싸움)이 먼저 발생.</li>
+      </ul>
+    </div>
+
+    <!-- S5 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">5</span>On April 20, with four crew members, Shackleton set off on a risky journey in a small lifeboat to seek help from a whaling station on South Georgia Island, which was 1,300 km away.</div>
+      <div class="slash-reading">4월 20일, 네 명의 대원과 함께, / 섀클턴은 위험한 여정을 시작했다 / 작은 구명보트로 / 사우스조지아 섬의 포경 기지에 도움을 구하기 위해, / 그곳은 1,300km 떨어져 있었다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">to부정사 목적</span>'to seek help'는 목적의 부사적 to부정사 (= in order to seek).</li>
+        <li><span class="grammar-tag">관계대명사 계속적용법</span>'South Georgia Island, which was 1,300 km away' — 콤마 + which는 계속적 용법. 선행사에 부가 정보 추가. that으로 대체 불가.</li>
+      </ul>
+    </div>
+
+    <!-- S6 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">6</span>He took some of the troublesome characters with him so that the remaining crew would not fight while on Elephant Island.</div>
+      <div class="slash-reading">그는 문제적 인물 일부를 데리고 갔다 / 남은 대원들이 싸우지 않도록 / 엘리펀트 섬에 있는 동안.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">so that 목적</span>'so that + 주어 + 조동사 + 동사원형'은 목적(~하도록, ~하기 위해). 부정의 목적은 'so that ... would not'.</li>
+        <li><span class="grammar-tag">지문1 연결</span>지문 1에서 섀클턴이 문제적 인물 곁에 머문 것과 동일한 전략. 일관된 갈등 예방 리더십.</li>
+      </ul>
+    </div>
+
+    <!-- S7 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">7</span>Each morning on the island, Frank Wild, whom Shackleton had left in charge, called everyone to be ready to depart.</div>
+      <div class="slash-reading">섬에서 매일 아침, / 섀클턴이 책임자로 남겨둔 프랭크 와일드는 / 모두에게 출발 준비를 하라고 촉구했다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">관계대명사 목적격 whom</span>'Frank Wild, whom Shackleton had left in charge' — whom은 목적격 관계대명사, 삽입절 내에서 leave의 목적어 역할. 계속적 용법.</li>
+        <li><span class="grammar-tag">call + 목적어 + to부정사</span>'called everyone to be ready' — call은 목적격보어로 to부정사 취함. (= urged everyone to be ready)</li>
+      </ul>
+    </div>
+
+    <!-- S14 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">14</span>Shackleton woke them up after only a five-minute nap, which saved them from freezing to death.</div>
+      <div class="slash-reading">섀클턴은 단 5분의 낮잠 후 그들을 깨웠는데, / 이것이 그들을 얼어 죽는 것으로부터 구했다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">관계대명사 계속적(which)</span>'which saved them from freezing' — which는 앞 절 전체(섀클턴이 깨운 행위)를 선행사로 받는 계속적 용법.</li>
+        <li><span class="grammar-tag">save A from B</span>'save them from freezing to death' — 'save + 목적어 + from + 동명사' = ~가 ...하는 것을 막다/구하다.</li>
+      </ul>
+    </div>
+
+    <!-- S15 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">15</span>When they arrived at the whaling station, Shackleton hurried to arrange for a rescue ship, the Yelcho, to be sent to Elephant Island.</div>
+      <div class="slash-reading">포경 기지에 도착하자, / 섀클턴은 서둘러 / 구조선 옐초가 엘리펀트 섬으로 보내지도록 조치했다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">arrange for A to B</span>'arrange for a rescue ship to be sent' — 'arrange for + 목적어 + to부정사(수동)' = ~가 ...되도록 주선하다.</li>
+        <li><span class="grammar-tag">동격</span>'a rescue ship, the Yelcho' — the Yelcho가 a rescue ship의 동격(고유명사로 구체화).</li>
+        <li><span class="grammar-tag">hurry to</span>'hurried to arrange' — hurry + to부정사 = 서둘러 ~하다.</li>
+      </ul>
+    </div>
+
+    <!-- S17 -->
+    <div class="sentence-block">
+      <div class="sentence-en"><span class="sentence-num">17</span>Upon hearing the news of the rescue ship's arrival, everyone rushed out of camp.</div>
+      <div class="slash-reading">구조선 도착 소식을 듣자마자, / 모두가 야영지 밖으로 뛰쳐나갔다.</div>
+      <ul class="grammar-list">
+        <li><span class="grammar-tag">upon + 동명사</span>'Upon hearing' = '~하자마자' (= As soon as they heard). upon/on + 동명사는 즉시성을 강조하는 관용 표현.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TAB 2: 문법총정리 -->
+  <div class="section" id="p2-tab1">
+    <div class="section-header"><h2>문법총정리</h2><div class="sh-line"></div></div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">① 관계대명사 계속적 용법 (which/whom)</div>
+      <div class="g-title">South Georgia Island, which ... / Frank Wild, whom ...</div>
+      <div class="g-evidence">"Shackleton set off ... to South Georgia Island, which was 1,300 km away." / "Frank Wild, whom Shackleton had left in charge, called everyone to be ready."</div>
+      <div class="g-point">콤마 + 관계대명사(which/whom)는 계속적 용법으로 앞 명사나 절 전체에 부가 설명. which는 that으로, whom은 who로 대체 불가. 수능에서 계속적 vs 한정적 구별 출제.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">② so that 목적절</div>
+      <div class="g-title">so that the remaining crew would not fight</div>
+      <div class="g-evidence">"He took some of the troublesome characters with him so that the remaining crew would not fight while on Elephant Island."</div>
+      <div class="g-point">'so that + 주어 + 조동사(would/could/might) + 동사원형'은 목적을 나타냄. 부정 목적은 'so that ... would not'. 결과절(so ... that)과 혼동 주의: so that(목적) vs so + 형용사/부사 + that(결과).</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">③ upon + 동명사</div>
+      <div class="g-title">Upon hearing the news</div>
+      <div class="g-evidence">"Upon hearing the news of the rescue ship's arrival, everyone rushed out of camp."</div>
+      <div class="g-point">'upon/on + 동명사'는 '~하자마자'의 즉시성 표현. As soon as they heard ...로 바꿔 쓸 수 있음. 수능 빈출 전치사 관용 표현.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">④ arrange for A to do (사역 표현)</div>
+      <div class="g-title">arrange for a rescue ship to be sent</div>
+      <div class="g-evidence">"Shackleton hurried to arrange for a rescue ship, the Yelcho, to be sent to Elephant Island."</div>
+      <div class="g-point">'arrange for + 목적어 + to부정사'는 '~가 ...하도록 주선하다'. 목적어와 동사 관계가 수동이면 'to be + 과거분사' 사용. 수능에서 능동/수동 to부정사 구별 유형 출제.</div>
+    </div>
+
+    <div class="grammar-summary-item">
+      <div class="g-num">⑤ 현재완료 (결과·완료)</div>
+      <div class="g-title">I have done it / we have been through hell</div>
+      <div class="g-evidence">"I have done it," Shackleton wrote to his wife. "Not a life lost, and we have been through hell."</div>
+      <div class="g-point">현재완료(have + p.p.)는 과거 행위의 현재적 결과(have done = 해냈다, 결과가 지금도 남음)를 강조. 과거형(did)은 단순 사실, 현재완료는 현재와의 연결. 634일의 여정 끝 감격을 현재완료로 표현.</div>
+    </div>
+  </div>
+
+  <!-- TAB 3: 전문해석 -->
+  <div class="section" id="p2-tab2">
+    <div class="section-header"><h2>전문해석</h2><div class="sh-line"></div></div>
+    <div class="translation-box">
+      1916년 4월 9일, 유빙이 갈라지기 시작하자 섀클턴은 명령을 내렸다. "보트를 내려라." 그들은 해빙을 지나 개방된 바다를 횡단했다. 보트 안으로 쏟아지는 얼어붙은 바닷물과 싸우며, 그들은 6일 후인 4월 15일에 마침내 엘리펀트 섬에 도달했다. 그 섬은 어떤 항로에서도 멀리 떨어져 있었기 때문에, 그들이 발견되어 구조될 가능성은 낮았다.<br><br>
+      4월 20일, 섀클턴은 네 명의 대원과 함께 1,300km 떨어진 사우스조지아 섬의 포경 기지에 도움을 구하기 위해 작은 구명보트로 위험한 여정을 시작했다. 그는 남은 대원들이 엘리펀트 섬에 있는 동안 싸우지 않도록 문제적 인물 일부를 함께 데려갔다. 섬에서 매일 아침, 섀클턴이 책임자로 남겨둔 프랭크 와일드는 모두에게 출발 준비를 하라고 촉구했다. "대장이 오늘 올지도 몰라요!" 그는 매일 선언했다.<br><br>
+      섀클턴과 네 명의 대원들은 마침내 5월 10일 사우스조지아 섬에 도착했다. 그러나 그들의 사투는 아직 끝나지 않았다. 포경 기지는 산맥 반대편에 있었다. 그들은 험한 산을 도보로 넘어야 했다. 잠시 쉬기 위해 멈추자 지친 대원들은 곧바로 잠들었다. 섀클턴은 단 5분의 낮잠 후 그들을 깨웠는데, 이것이 그들을 얼어 죽는 것으로부터 구했다. 포경 기지에 도착하자 섀클턴은 서둘러 구조선 옐초가 엘리펀트 섬으로 보내지도록 조치했다.<br><br>
+      1916년 8월 30일, 엘리펀트 섬의 대원들은 배 한 척을 발견했다. 구조선 도착 소식을 듣자마자, 모두가 야영지 밖으로 뛰쳐나갔다. "괜찮아요?" 섀클턴이 외쳤다. "모두 무사합니다!" 대답이 돌아왔다. 섬에 있던 28명 전원이 살아서 안전하게 구조되었다. 남극에서 634일간 표류한 끝에, 대원들은 마침내 길고 혹독한 여정의 끝에 도달했다. "해냈습니다," 섀클턴은 아내에게 편지를 썼다. "단 한 명도 잃지 않았고, 우리는 지옥을 통과했습니다."
+    </div>
+  </div>
+
+  <!-- TAB 4: 주제·구조 -->
+  <div class="section" id="p2-tab3">
+    <div class="section-header"><h2>주제 · 요지 · 구조</h2><div class="sh-line"></div></div>
+    <div class="topic-card">
+      <div class="tc-label">Topic (주제)</div>
+      <div class="tc-content">섀클턴의 구조 시도와 28명 전원 생환의 기적</div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">Main Idea (요지)</div>
+      <div class="tc-content">섀클턴은 1,300km의 목숨을 건 항해와 산악 횡단을 감행하여 구조를 성사시킴으로써, 634일간의 남극 표류에서 대원 전원을 생존시키는 기적을 이루어냈다.</div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">Structure (구조)</div>
+      <div class="tc-content">
+        <div class="structure-flow">
+          <div class="structure-step"><span class="step-badge">탈출 시작</span><span class="step-text">구명보트로 엘리펀트 섬 도달 — 항로에서 멀어 구조 가능성 낮음</span></div>
+          <div class="structure-step"><span class="step-badge">결단</span><span class="step-text">섀클턴의 1,300km 구조 항해 결행 — 문제적 인물 동행으로 갈등 예방</span></div>
+          <div class="structure-step"><span class="step-badge">희망 유지</span><span class="step-text">와일드의 "The Boss may come today!" — 섬 잔류 대원 희망 지속</span></div>
+          <div class="structure-step"><span class="step-badge">마지막 고비</span><span class="step-text">산악 횡단 + 5분 낮잠 깨우기 — 끝까지 멈추지 않는 결단</span></div>
+          <div class="structure-step"><span class="step-badge">결말</span><span class="step-text">28명 전원 생환 — "Not a life lost" 섀클턴 리더십의 완성</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="topic-card">
+      <div class="tc-label">전체 흐름 완결 (3개 지문 관점)</div>
+      <div class="tc-content">지문 3은 <strong>위기 해결 및 결말(대단원)</strong>이다. 지문 1(위기 설정) → 지문 2(위기 심화) → 지문 3(해결)의 3막 구조가 완성된다. 섀클턴의 리더십 핵심 가치(희생·소통·결단·갈등 관리)가 세 지문에 걸쳐 일관되게 나타나며, 전원 생환이라는 결과로 수렴된다.</div>
+    </div>
+  </div>
+
+  <!-- TAB 5: 변형문제 -->
+  <div class="section" id="p2-tab4">
+    <div class="section-header"><h2>변형문제</h2><div class="sh-line"></div></div>
+
+    <!-- Q1 -->
+    <div class="quiz-block" id="p2q1">
+      <div class="q-type">주제추론</div>
+      <div class="q-text">1. 다음 글의 주제로 가장 적절한 것은?</div>
+      <div class="q-passage">On April 20, Shackleton set off on a risky journey to seek help ... Shackleton woke them up after only a five-minute nap, which saved them from freezing to death. ... All 28 men on the island were rescued alive and safe. "Not a life lost, and we have been through hell."</div>
+      <button class="choice-btn" onclick="checkAnswer('p2q1',this,false)">① the geography of South Georgia Island and Elephant Island</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q1',this,false)">② the dangers of sailing in Antarctic waters</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q1',this,true)">③ Shackleton's decisive actions that led to the rescue of all crew members</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q1',this,false)">④ the psychological impact of survival on Antarctic explorers</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q1',this,false)">⑤ how rescue ships operate in remote polar regions</button>
+      <div class="quiz-result" id="p2q1-result"></div>
+      <div class="quiz-explain" id="p2q1-explain" style="display:none">구조 항해 결단, 산악 횡단, 5분 낮잠 깨우기 등 섀클턴의 일련의 결단적 행동들이 전원 생환으로 이어진다. ③이 가장 포괄적.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p2q1')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-block" id="p2q2">
+      <div class="q-type">빈칸추론</div>
+      <div class="q-text">2. 다음 빈칸에 들어갈 말로 가장 적절한 것은?</div>
+      <div class="q-passage">He took some of the troublesome characters with him so that the remaining crew would not fight. This shows that even in the middle of a dangerous rescue mission, Shackleton never stopped ________ his team's unity.</div>
+      <button class="choice-btn" onclick="checkAnswer('p2q2',this,false)">① celebrating</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q2',this,false)">② questioning</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q2',this,true)">③ managing</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q2',this,false)">④ ignoring</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q2',this,false)">⑤ evaluating</button>
+      <div class="quiz-result" id="p2q2-result"></div>
+      <div class="quiz-explain" id="p2q2-explain" style="display:none">문제적 인물을 함께 데려간 것은 팀의 갈등을 예방하고 결속을 '관리(managing)'하기 위한 행동. 지문 1과 동일한 전략.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p2q2')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-block" id="p2q3">
+      <div class="q-type">어법오류</div>
+      <div class="q-text">3. 다음 밑줄 친 부분 중 어법상 틀린 것은?</div>
+      <div class="q-passage">① <u>Upon hearing</u> the news, everyone rushed out. Shackleton set off to seek help from a whaling station, ② <u>which</u> was 1,300 km away. He took the troublesome characters with him ③ <u>so that</u> the remaining crew would not fight. Shackleton woke them up, ④ <u>that</u> saved them from freezing to death. All 28 men ⑤ <u>were rescued</u> alive and safe.</div>
+      <button class="choice-btn" onclick="checkAnswer('p2q3',this,false)">① Upon hearing</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q3',this,false)">② which</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q3',this,false)">③ so that</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q3',this,true)">④ that</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q3',this,false)">⑤ were rescued</button>
+      <div class="quiz-result" id="p2q3-result"></div>
+      <div class="quiz-explain" id="p2q3-explain" style="display:none">④ 콤마 뒤에서 앞 절 전체를 선행사로 받을 때는 관계대명사 which를 써야 함. that은 계속적 용법 불가. 'that' → 'which'.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p2q3')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-block" id="p2q4">
+      <div class="q-type">내용불일치</div>
+      <div class="q-text">4. 본문의 내용과 일치하지 않는 것은?</div>
+      <button class="choice-btn" onclick="checkAnswer('p2q4',this,false)">① 섀클턴 일행은 4월 15일에 엘리펀트 섬에 도착했다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q4',this,false)">② 사우스조지아 섬은 엘리펀트 섬에서 약 1,300km 떨어져 있었다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q4',this,false)">③ 프랭크 와일드는 섀클턴이 떠난 후 섬의 책임자였다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q4',this,true)">④ 대원들은 산을 넘어 포경 기지 쪽으로 충분히 쉰 후 출발했다.</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q4',this,false)">⑤ 엘리펀트 섬의 대원 28명 전원이 생환했다.</button>
+      <div class="quiz-result" id="p2q4-result"></div>
+      <div class="quiz-explain" id="p2q4-explain" style="display:none">④는 반대. 섀클턴은 단 5분만 자고 대원들을 깨워서(after only a five-minute nap) 얼어 죽는 것을 막았다.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p2q4')">↺ 다시풀기</button>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-block" id="p2q5">
+      <div class="q-type">글의순서</div>
+      <div class="q-text">5. 주어진 문장 다음에 이어질 글의 순서로 가장 적절한 것은?</div>
+      <div class="q-passage">Shackleton and the four crew members finally reached South Georgia Island on May 10. Still, their struggle was not over yet.</div>
+      <div class="q-passage" style="margin-top:8px">
+        (A) When they arrived at the whaling station, Shackleton hurried to arrange for a rescue ship to be sent to Elephant Island.<br>
+        (B) The whaling station was located on the other side of a mountain range. They had to cross the rocky mountains on foot.<br>
+        (C) They stopped to rest for a while, and the exhausted men fell asleep right away. Shackleton woke them up after only a five-minute nap.
+      </div>
+      <button class="choice-btn" onclick="checkAnswer('p2q5',this,false)">① (A)-(B)-(C)</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q5',this,true)">② (B)-(C)-(A)</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q5',this,false)">③ (B)-(A)-(C)</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q5',this,false)">④ (C)-(B)-(A)</button>
+      <button class="choice-btn" onclick="checkAnswer('p2q5',this,false)">⑤ (C)-(A)-(B)</button>
+      <div class="quiz-result" id="p2q5-result"></div>
+      <div class="quiz-explain" id="p2q5-explain" style="display:none">(B) 포경 기지가 산 너머에 있어 도보 산악 횡단 → (C) 쉬다가 잠들고 5분 후 깨움 → (A) 기지 도착 후 구조선 조치. 지리적 이동 순서로 전개.</div>
+      <button class="quiz-reset-btn" onclick="resetQuiz('p2q5')">↺ 다시풀기</button>
+    </div>
+  </div>
+
+  <!-- TAB 6: 서술형 -->
+  <div class="section" id="p2-tab5">
+    <div class="section-header"><h2>서술형</h2><div class="sh-line"></div></div>
+
+    <div class="seosul-block">
+      <div class="s-num">서술형 1</div>
+      <div class="s-text">섀클턴이 위험한 구조 항해에서도 문제적 대원들을 함께 데려간 이유를 본문에 근거하여 영어로 쓰시오.</div>
+      <div class="s-cond">조건: so that을 사용하여 20단어 내외의 완전한 문장으로 쓸 것.</div>
+      <div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div>
+    </div>
+
+    <div class="seosul-block">
+      <div class="s-num">서술형 2</div>
+      <div class="s-text">다음 밑줄 친 부분을 어법에 맞게 고쳐 문장 전체를 다시 쓰시오.<br><br><em>"Shackleton woke them up after only a five-minute nap, <u>that</u> saved them from freezing to death."</em></div>
+      <div class="s-cond">조건: 어법에 맞게 완전한 문장으로 쓸 것.</div>
+      <div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div></div>
+    </div>
+  </div>
+
+  <!-- TAB 7: 정답지 -->
+  <div class="section" id="p2-tab6">
+    <div class="section-header"><h2>정답지</h2><div class="sh-line"></div></div>
+
+    <div class="answer-key-section">
+      <div class="ak-title">▶ 변형문제 정답 및 해설</div>
+      <div class="variform-answer"><span class="va-num">1</span><span class="va-ans">③</span><span class="va-exp">구조 항해 결단·산악 횡단·5분 낮잠 깨우기 등 섀클턴의 결단적 행동들이 전원 생환으로 귀결됨.</span></div>
+      <div class="variform-answer"><span class="va-num">2</span><span class="va-ans">③</span><span class="va-exp">managing — 문제적 인물 동행은 팀 갈등 예방·결속 관리 전략. 지문 1 리더십과 일관성 있음.</span></div>
+      <div class="variform-answer"><span class="va-num">3</span><span class="va-ans">④</span><span class="va-exp">콤마 뒤 앞 절 전체를 선행사로 받는 관계대명사는 which. that은 계속적 용법 불가.</span></div>
+      <div class="variform-answer"><span class="va-num">4</span><span class="va-ans">④</span><span class="va-exp">단 5분만 자고 깨워 얼어 죽는 것 방지. '충분히 쉰 후 출발'은 사실과 반대.</span></div>
+      <div class="variform-answer"><span class="va-num">5</span><span class="va-ans">②</span><span class="va-exp">(B)산 너머 기지 → 도보 산악 횡단 → (C)쉬다 잠들고 5분 후 깨움 → (A)기지 도착·구조선 조치.</span></div>
+    </div>
+
+    <div class="answer-key-section">
+      <div class="ak-title">▶ 서술형 모범답안</div>
+      <div class="seosul-answer">
+        <div class="sa-num">서술형 1</div>
+        <div class="sa-ans">He took some of the troublesome characters with him so that the remaining crew would not fight while on Elephant Island.<br><small style="color:#888">(so that + 주어 + would not + 동사원형 구조 사용)</small></div>
+      </div>
+      <div class="seosul-answer">
+        <div class="sa-num">서술형 2</div>
+        <div class="sa-ans">Shackleton woke them up after only a five-minute nap, which saved them from freezing to death.<br><small style="color:#888">(앞 절 전체를 선행사로 받는 계속적 용법: that → which)</small></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- ===================== END PASSAGE 3 ===================== -->
+  </div><!-- end #content -->
+</div><!-- end #main -->
+
+<script>
+let currentPassage = 0;
+let currentTab = 0;
+
+const passTitles = [
+  '지문 1 — 출발과 빙하 조난',
+  '지문 2 — 침몰과 빙하 생존',
+  '지문 3 — 탈출과 전원 생환'
+];
+
+function selectPassage(idx) {
+  // Hide all passages
+  document.querySelectorAll('.passage-section').forEach(function(el) { el.style.display = 'none'; });
+  // Show selected
+  document.getElementById('passage-' + idx).style.display = 'block';
+  // Update sidebar
+  document.querySelectorAll('.passage-btn').forEach(function(btn, i) {
+    btn.classList.toggle('active', i === idx);
+  });
+  // Update header
+  document.getElementById('header-title').textContent = passTitles[idx];
+  currentPassage = idx;
+  // Reset to tab 0
+  selectTab(0);
+}
+
+function selectTab(idx) {
+  var p = currentPassage;
+  // Hide all sections in current passage
+  for (var t = 0; t < 7; t++) {
+    var el = document.getElementById('p' + p + '-tab' + t);
+    if (el) el.classList.remove('active');
+  }
+  // Show selected
+  var target = document.getElementById('p' + p + '-tab' + idx);
+  if (target) target.classList.add('active');
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
+    btn.classList.toggle('active', i === idx);
+  });
+  currentTab = idx;
+}
+
+function checkAnswer(qid, btn, isCorrect) {
+  var block = document.getElementById(qid);
+  var buttons = block.querySelectorAll('.choice-btn');
+  // Disable all
+  buttons.forEach(function(b) { b.disabled = true; });
+  var result = document.getElementById(qid + '-result');
+  var explain = document.getElementById(qid + '-explain');
+  if (isCorrect) {
+    btn.classList.add('correct');
+    result.textContent = '✓ 정답입니다!';
+    result.className = 'quiz-result ok';
+  } else {
+    btn.classList.add('incorrect');
+    result.textContent = '✗ 오답입니다. 정답을 확인하세요.';
+    result.className = 'quiz-result fail';
+    // Reveal correct answer
+    buttons.forEach(function(b) {
+      if (b.onclick.toString().indexOf('true') !== -1) {
+        b.classList.add('correct');
+      }
+    });
+  }
+  if (explain) explain.style.display = 'block';
+}
+
+function resetQuiz(qid) {
+  var block = document.getElementById(qid);
+  var buttons = block.querySelectorAll('.choice-btn');
+  buttons.forEach(function(b) {
+    b.disabled = false;
+    b.classList.remove('correct', 'incorrect');
+  });
+  var result = document.getElementById(qid + '-result');
+  var explain = document.getElementById(qid + '-explain');
+  if (result) { result.textContent = ''; result.className = 'quiz-result'; }
+  if (explain) explain.style.display = 'none';
+}
+</script>
+</body>
+</html>
